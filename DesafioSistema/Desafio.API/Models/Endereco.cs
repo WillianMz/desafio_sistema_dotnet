@@ -22,11 +22,11 @@ namespace Desafio.API.Models
                 .IsNotNullOrEmpty(estado,"UF","Infome o estado-UF"));
         }
 
-        public string Logradouro { get; private set; }
+        public string? Logradouro { get; private set; }
         public int Numero { get; private set; }
-        public string Complemento { get; private set; }
-        public string Bairro { get; private set; }
-        public string Cidade { get; private set; }
-        public string Estado { get; private set; }
+        public string? Complemento { get; private set; }
+        public string? Bairro { get; private set; }
+        public string? Cidade { get; private set; }
+        public string? Estado { get; private set; }
     }
 }

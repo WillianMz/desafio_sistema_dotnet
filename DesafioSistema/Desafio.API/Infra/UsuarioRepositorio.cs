@@ -26,12 +26,25 @@ namespace Desafio.API.Infra
             }
         }
 
-        public async Task Create(Usuario model)
+        public async Task<Usuario> GetUsuario(string nome, string senha)
+        {
+            try
+            {
+                return await _context.Usuarios.Where(u => u.Nome == nome && u.Senha == senha).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<Usuario> Create(Usuario model)
         {
             try
             {
                 _context.Usuarios.Add(model);
-                await Save();
+                await _context.SaveChangesAsync();
+                return model;
             }
             catch (Exception ex)
             {
@@ -44,7 +57,7 @@ namespace Desafio.API.Infra
             try
             {
                 _context.Usuarios?.Update(model);
-                await Save();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -57,7 +70,7 @@ namespace Desafio.API.Infra
             try
             {
                 _context.Usuarios?.Remove(model);
-                await Save();
+                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -82,18 +95,6 @@ namespace Desafio.API.Infra
             try
             {
                 return await _context.Usuarios.ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task Save()
-        {
-            try
-            {
-                await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {

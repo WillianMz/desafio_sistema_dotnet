@@ -1,13 +1,15 @@
 ﻿using AutoMapper;
 using Desafio.API.Interfaces;
 using Desafio.API.Models;
+using Desafio.API.Util;
 using Desafio.API.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace Desafio.API.Controllers
 {
-    [ApiController]
+    [ApiController, Authorize]
     [Route("api/[controller]")]
     public class UsuarioController : ControllerBase
     {
@@ -28,7 +30,32 @@ namespace Desafio.API.Controllers
                 return null;
         }
 
-        [HttpPost]
+        [HttpPost, AllowAnonymous]
+        [Route("/usuario/login")]
+        public async Task<ActionResult> Authenticate(UsuarioAuthViewModel usuarioAuth)
+        {
+            try
+            {
+                var senha = GerarMD5.CalculaHash(usuarioAuth.Senha);
+                Usuario usuario = await _usuarioRep.GetUsuario(usuarioAuth.Usuario.ToUpper(), senha);
+
+                if (usuario == null)
+                {
+                    Retorno retorno = new(false, "Usuário não encontrado");
+                    return Ok(retorno);
+                }
+
+                //var view = _mapper.Map<UsuarioViewModel>(usuario);
+                var result = new UsuarioAuthResponseViewModel(_mapper.Map<UsuarioViewModel>(usuario), TokenService.GerarToken(usuario));
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        [HttpPost, AllowAnonymous]
         [Route("/usuario")]
         public async Task<ActionResult> Post([FromBody] NovoUsuarioViewModel usuarioModel)
         {
@@ -36,6 +63,12 @@ namespace Desafio.API.Controllers
 
             try
             {
+                var senha = usuarioModel.Senha;
+                var confSenha = usuarioModel.ConfirmarSenha;
+
+                if (senha != confSenha)
+                    return Ok(new Retorno(false, "Senhas não conferem!"));
+
                 Usuario usuario = new(usuarioModel.Nome, usuarioModel.CPF, usuarioModel.Senha, usuarioModel.Telefone);
 
                 if(usuario.IsValid)
@@ -60,7 +93,7 @@ namespace Desafio.API.Controllers
                     }
                                                             
                     await _usuarioRep.Create(usuario);
-                    Retorno result = new(true, "Pessoa cadastrada com sucesso!");
+                    Retorno result = new(true, $"Pessoa cadastrada com sucesso, código {usuario.Id}, CPF {usuario.CPF.Substring(0,4)}");
                     return Created("", result);
                 }
                 else
@@ -142,7 +175,7 @@ namespace Desafio.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         [Route("/usuario")]
         public async Task<ActionResult> GetAll()
         {
