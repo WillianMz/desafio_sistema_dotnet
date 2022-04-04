@@ -108,7 +108,7 @@ namespace Desafio.API.Controllers
             }
         }
 
-        [HttpPut]
+        [HttpPut, AllowAnonymous]
         [Route("/usuario")]
         public async Task<ActionResult> Put([FromBody] EditarUsuarioViewModel usuarioModel)
         {
@@ -193,7 +193,7 @@ namespace Desafio.API.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         [Route("/usuario/{id}")]
         public async Task<ActionResult> GetById(int id)
         {
